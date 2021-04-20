@@ -25,7 +25,11 @@ class SongsController < ApplicationController
   end
 
   def new
-    @song = Song.new
+    if params[:artist_id] && !Artist.exists?(params[:artist_id])
+      redirect_to artists_path, alert: "Artist not found."
+    else
+      @song = Song.new(artist_id: params[:artist_id])
+    end
   end
 
   def create
@@ -39,10 +43,20 @@ class SongsController < ApplicationController
   end
 
   def edit
-    @song = Song.find(params[:id])
+    if params[:artist_id]# check if nested route
+      artist = Artist.find_by_id(params[:artist_id])  # get artist instance
+      if artist.nil?  # check if actual artist
+        redirect_to artists_path, alert: "Artist not found."  # redirect and alert if not
+      else
+        @song = artist.songs.find_by_id(params[:id])  # if artist exists, try to find song
+        redirect_to artist_songs_path(artist), alert: "Song not found." if @song.nil? # redirect and alert if not valid song
+      end
+    else  # if not nested route => set @song to new and collect artist_id
+      @song = Song.new(artist_id: params[:artist_id])
+    end
   end
 
-  def update
+  def updates 
     @song = Song.find(params[:id])
 
     @song.update(song_params)
@@ -64,7 +78,7 @@ class SongsController < ApplicationController
   private
 
   def song_params
-    params.require(:song).permit(:title, :artist_name)
+    params.require(:song).permit(:title, :artist_name, :artist_id)
   end
 end
 

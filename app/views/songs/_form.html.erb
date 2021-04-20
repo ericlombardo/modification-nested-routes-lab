@@ -1,6 +1,12 @@
 <%= form_for @song  do |f| %>
+
+  <!-- either display a dropdown to select artist or collect artist_id in hidden field-->
+  <%= artist_select @song %>
+
   <%= f.label :title %>
   <%= f.text_field :title %><br>
+
+
   <%= f.label :artist_name %>
   <%= f.text_field :artist_name %>
   <br />
